@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T.O.M.A.S.</title>
+
+    <style>
+        html, body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="form">
+        <input id="string" type="text" value="tomas">
+        <button id="submit">lookup</button>
+    </div>
+    <pre id="container"></pre>
+
+    <script>
+        const container = document.getElementById("container");
+        const string = document.getElementById("string");
+        const submit = document.getElementById("submit");
+
+        // returns {
+        //     ticker: string;
+        //     name: string;
+        //     is_etf: null | boolean;
+        //     exchange: string;
+        // }[]
+        const getStocks = async () => {
+            const storageKey = "stoinks";
+            let data = null;
+
+            // Attempt to read data from local cache.
+            let rawCache = localStorage.getItem(storageKey);
+            if (rawCache !== "") {
+                try {
+                    data = JSON.parse(rawCache);
+                } catch (e) {}
+            }
+
+            // Query API when empty/corrupt.
+            if (data === null) {
+                data = await fetch("https://dumbstockapi.com/stock?exchanges=NYSE").then((r) => r.json());
+                localStorage.setItem(storageKey, JSON.stringify(data));
+            }
+
+            return data;
+        }
+
+        submit.onclick = async () => {
+            const targetString = string.value.toUpperCase().replace(/[\W_]/g, "");
+            const stocks = await getStocks();
+            
+            // Can use a ticker more than once.
+            const stringBuilder = (target) => {
+                if (!target) return [];
+                const paths = [];
+                stocks.forEach((stock) => {
+                    const {ticker} = stock;
+                    if (target === ticker) {
+                        paths.push([stock]);
+                        return;
+                    }
+                    if (target.startsWith(ticker)) {
+                        const childPaths = stringBuilder(target.slice(ticker.length));
+                        childPaths.forEach((childPath) => paths.push([stock, ...childPath]));
+                    }
+                });
+                return paths;
+            }
+
+            container.innerText = JSON.stringify(stringBuilder(targetString), null, 2);
+        };
+    </script>
+</body>
+</html>
