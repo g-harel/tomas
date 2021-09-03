@@ -14,16 +14,16 @@
     </style>
 </head>
 <body>
-    <div class="form">
-        <input id="string" type="text" value="tomas">
-        <button id="submit">lookup</button>
-    </div>
+    <form id="form" action="#">
+        <input id="query" type="text" value="tomas">
+        <input type="submit" value="lookup">
+    </form>
     <pre id="container"></pre>
 
     <script>
         const container = document.getElementById("container");
-        const string = document.getElementById("string");
-        const submit = document.getElementById("submit");
+        const form = document.getElementById("form");
+        const query = document.getElementById("query");
 
         // returns {
         //     ticker: string;
@@ -52,14 +52,16 @@
             return data;
         }
 
-        submit.onclick = async () => {
-            const targetString = string.value.toUpperCase().replace(/[\W_]/g, "");
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const targetString = query.value.toUpperCase().replace(/[\W_]/g, "");
             const stocks = await getStocks();
-            
+
             // Can use a ticker more than once.
             const stringBuilder = (target) => {
-                if (!target) return [];
                 const paths = [];
+                if (target === "") return paths;
                 stocks.forEach((stock) => {
                     const {ticker} = stock;
                     if (target === ticker) {
