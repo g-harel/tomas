@@ -3,22 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T.O.M.A.S.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;600;700&display=swap" rel="stylesheet">
+    <title>TOMAS</title>
 
     <style>
         html, body {
+            align-items: center;
             display: flex;
             flex-direction: column;
             margin: 0;
         }
+
+        body {
+            align-self: stretch;
+            font-size: 20px;
+                font-family: Helvetica,Arial,sans-serif;
+            font-weight: 600;
+        }
+
+        .highlight {
+            color: #FFA028;
+        }
+
+        header {
+            align-self: stretch;
+            background-color: #000000;
+            color: #ffffff;
+            font-size: 0.7em;
+            font-weight: 700;
+            padding: 6px calc(50% - 300px);
+        }
+
+        h1 {
+            font-weight: 800;
+                font-size: 2.5rem;
+                font-family: Helvetica,Arial,sans-serif;
+            margin: 26px;
+            transform: scaleX(0.95) skewY(-6deg);
+        }
+
+        .content {
+            margin: 10px 0;
+            width: 600px;
+        }
+
+        form {
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        form input[type="text"] {
+            background-color: #ffffff;
+            border: 2px solid #999999;
+            border-radius: 3px;
+            flex-grow: 1;
+            font-family: Helvetica,Arial,sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            padding: 1rem;
+        }
+
+        form input[type="text"]::placeholder {
+            text-transform: none;
+        }
+
+        form .instructions {
+            font-weight: normal;
+            font-size: 0.7em;
+            text-align: center;
+            padding: 10px 15%;
+        }
     </style>
 </head>
 <body>
-    <form id="form" action="#">
-        <input id="query" type="text" value="tomas">
-        <input type="submit" value="lookup">
-    </form>
-    <pre id="container"></pre>
+    <header>Buy and hold</header>
+    <h1>TOMAS</h1>
+    <div class="content">
+        <form id="form" action="#">
+            <input id="query" type="text" autofocus>
+            <span class="instructions">
+                Enter your investment strategy to create the perfect portfolio using proprietary advanced AI and the blockchain.
+            </span>
+        </form>
+        <pre id="container"></pre>
+    </div>
 
     <script>
         const container = document.getElementById("container");
@@ -36,6 +107,7 @@
             let data = null;
 
             // Attempt to read data from local cache.
+            // TODO cache timeout
             let rawCache = localStorage.getItem(storageKey);
             if (rawCache !== "") {
                 try {
@@ -45,19 +117,14 @@
 
             // Query API when empty/corrupt.
             if (data === null) {
-                data = await fetch("https://dumbstockapi.com/stock?exchanges=NYSE").then((r) => r.json());
+                data = await fetch("https://dumbstockapi.com/stock?exchanges=NASDAQ,NYSE").then((r) => r.json());
                 localStorage.setItem(storageKey, JSON.stringify(data));
             }
 
             return data;
         }
 
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-
-            const targetString = query.value.toUpperCase().replace(/[\W_]/g, "");
-            const stocks = await getStocks();
-
+        const calcPortfolios = (strategy, stocks) => {
             // Can use a ticker more than once.
             const stringBuilder = (target) => {
                 const paths = [];
@@ -72,11 +139,41 @@
                         const childPaths = stringBuilder(target.slice(ticker.length));
                         childPaths.forEach((childPath) => paths.push([stock, ...childPath]));
                     }
+                    // TODO skip segments that don't match.
                 });
                 return paths;
             }
 
-            container.innerText = JSON.stringify(stringBuilder(targetString), null, 2);
+            return stringBuilder(strategy);
+        }
+
+        const pickPortfolio = (portfolios) => {
+            let best = portfolios[0];
+            let bestScore = 0;
+            for (const portfolio of portfolios) {
+                const score = portfolio.reduce((s, stock) => s * stock.ticker.length, 1);
+                if (score > bestScore) {
+                    best = portfolio;
+                    bestScore = score;
+                }
+            }
+            return best;
+        }
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const targetString = query.value.toUpperCase().replace(/[\W_]/g, "");
+            if (targetString === "") return;
+
+            // TODO loading state + fake processing
+            const stocks = await getStocks();
+            // TODO 100% GME when nothing found.
+            const allPortfolios = calcPortfolios(targetString, stocks);
+            const bestPortfolio = pickPortfolio(allPortfolios);
+
+            console.log(allPortfolios);
+            container.innerText = JSON.stringify(bestPortfolio, null, 2);
         };
     </script>
 </body>
