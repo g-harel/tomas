@@ -183,8 +183,10 @@
 
             // TODO loading state + fake processing
             const stocks = await getStocks();
-            // TODO 100% GME when nothing found.
-            const allPortfolios = calcPortfolios(targetString, stocks);
+            let allPortfolios = calcPortfolios(targetString, stocks);
+            if (allPortfolios.length === 0) {
+                allPortfolios = calcPortfolios("GME", stocks);
+            }
             const bestPortfolio = pickPortfolio(allPortfolios);
 
             console.log(allPortfolios);
