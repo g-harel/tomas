@@ -103,13 +103,49 @@
                 blockchain.
             </span>
         </form>
-        <pre id="container"></pre>
+        <div id="container"></div>
+
+        <!-- Components used in the container. -->
+        <div hidden>
+            <style>
+                #loading {
+                    text-align: center;
+                    padding: 5rem;
+                }
+
+                #loading .spinner {
+                    animation: spin 1s linear infinite;
+                    border: 7px solid transparent;
+                    border-top: 7px solid #000000;
+                    border-bottom: 7px solid #000000;
+                    border-radius: 50%;
+                    display: inline-block;
+                    height: 20px;
+                    width: 20px;
+                    margin: 0;
+                }
+
+                @keyframes spin {
+                    0% {
+                        transform: rotate(0deg);
+                    }
+
+                    100% {
+                        transform: rotate(360deg);
+                    }
+                }
+            </style>
+            <div id="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         const container = document.getElementById("container");
         const form = document.getElementById("form");
         const query = document.getElementById("query");
+        const loading = document.getElementById("loading");
 
         // returns {
         //     ticker: string;
@@ -175,6 +211,14 @@
             return best;
         }
 
+        const renderLoading = () => {
+            container.innerHTML = loading.outerHTML;
+        }
+
+        const renderStocks = (stocks) => {
+            container.innerHTML = `<pre>${JSON.stringify(stocks, null, 2)}</pre>`;
+        }
+
         form.onsubmit = async (e) => {
             e.preventDefault();
 
@@ -182,15 +226,17 @@
             if (targetString === "") return;
 
             // TODO loading state + fake processing
-            const stocks = await getStocks();
+            renderLoading();
+            const [stocks] = await Promise.all([
+                getStocks(),
+                new Promise((r) => setTimeout(r, 600 + Math.random() * 1000)),
+            ]);
             let allPortfolios = calcPortfolios(targetString, stocks);
             if (allPortfolios.length === 0) {
                 allPortfolios = calcPortfolios("GME", stocks);
             }
             const bestPortfolio = pickPortfolio(allPortfolios);
-
-            console.log(allPortfolios);
-            container.innerText = JSON.stringify(bestPortfolio, null, 2);
+            renderStocks(bestPortfolio);
         };
     </script>
 </body>
