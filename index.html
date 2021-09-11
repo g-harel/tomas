@@ -138,6 +138,10 @@
             <div id="loading">
                 <div class="spinner"></div>
             </div>
+
+            <div id="stock-item">
+                <pre>$json</pre>
+            </div>
         </div>
     </div>
 
@@ -145,7 +149,10 @@
         const container = document.getElementById("container");
         const form = document.getElementById("form");
         const query = document.getElementById("query");
-        const loading = document.getElementById("loading");
+
+        // Components
+        const loadingComponent = document.getElementById("loading");
+        const stockItemComponent = document.getElementById("stock-item");
 
         // returns {
         //     ticker: string;
@@ -211,12 +218,30 @@
             return best;
         }
 
+        const renderComponent = (element, data) => {
+            const template = element.outerHTML;
+            let output = "";
+            for (const item of data) {
+                let templateItem = template;
+                for (const [key, value] of Object.entries(item)) {
+                    templateItem = templateItem.replace(`$${key}`, String(value));
+                }
+                output += templateItem;
+            }
+            container.innerHTML = output;
+        };
+
         const renderLoading = () => {
-            container.innerHTML = loading.outerHTML;
+            renderComponent(loadingComponent, [{}]);
         }
 
         const renderStocks = (stocks) => {
-            container.innerHTML = `<pre>${JSON.stringify(stocks, null, 2)}</pre>`;
+            renderComponent(
+                stockItemComponent,
+                stocks.map((s) => ({
+                    json: JSON.stringify(s, null, 2),
+                })),
+            );
         }
 
         form.onsubmit = async (e) => {
