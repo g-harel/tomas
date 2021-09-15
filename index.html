@@ -139,8 +139,24 @@
                 <div class="spinner"></div>
             </div>
 
+            <style>
+                #stock-item {
+                    margin-top: 40px;
+                    padding: 1rem;
+                }
+
+                #stock-item .ticker {
+                    width: 4em;
+                    padding: 0.5em;
+                    background-color: #ff0000;
+                    border-radius: 0.25em;
+                    display: inline-block;
+                    text-align: center;
+                }
+            </style>
             <div id="stock-item">
-                <pre>$json</pre>
+                <span class="ticker">$ticker</span>
+                <span class="name">$name</span>
             </div>
         </div>
     </div>
@@ -241,12 +257,7 @@
         }
 
         const renderStocks = (stocks) => {
-            renderComponent(
-                stockItemComponent,
-                stocks.map((s) => ({
-                    json: JSON.stringify(s, null, 2),
-                })),
-            );
+            renderComponent(stockItemComponent, stocks);
         }
 
         form.onsubmit = async (e) => {
@@ -255,7 +266,6 @@
             const targetString = query.value.toUpperCase().replace(/[\W_]/g, "");
             if (targetString === "") return;
 
-            // TODO loading state + fake processing
             renderLoading();
             const [stocks] = await Promise.all([
                 getStocks(),
