@@ -278,6 +278,14 @@
             const bestPortfolio = pickPortfolio(allPortfolios);
             renderStocks(bestPortfolio);
         };
+
+        // Immediately render random stocks for testing purposes.
+        if (location.search.includes("test")) {
+            (async () => {
+                const stocks = await getStocks();
+                renderStocks(stocks.filter(() => Math.random() > 0.999));
+            })()
+        }
     </script>
 </body>
 
