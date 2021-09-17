@@ -281,6 +281,7 @@
             return best;
         }
 
+        // TODO test "GABLIEL"
         const randishAllocation = (tickers) => {
             // Generate random values for each ticker.
             const genRand = rand(tickers.join("/"));
@@ -297,7 +298,6 @@
             const percentagesTotal = percentages.reduce((sum, val) => sum + val, 0);
             const delta = 100 - percentagesTotal;
             if (Math.abs(delta) >= 0.01) {
-                console.log(delta);
                 percentages[0] = percentages[0] + Math.round(delta * 100) / 100;
             }
 
@@ -323,7 +323,6 @@
 
         const renderStocks = (stocks) => {
             const allocations = randishAllocation(stocks.map((s) => s.ticker));
-            console.log(allocations.reduce((sum, val) => sum + Number(val), 0));
             stocks.forEach((stock, i) => stock.allocation = allocations[i]);
             renderComponent(stockItemComponent, stocks);
         }
@@ -349,9 +348,14 @@
 
         // Immediately render random stocks for testing purposes.
         if (location.search.includes("test")) {
+            const testString = "";
             (async () => {
                 const stocks = await getStocks();
-                renderStocks(stocks.filter(() => Math.random() > 0.999));
+                if (testString !== "") {
+                    renderStocks(pickPortfolio(calcPortfolios(testString, stocks)));
+                } else {
+                    renderStocks(stocks.filter(() => Math.random() > 0.999));
+                }
             })()
         }
     </script>
