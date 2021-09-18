@@ -140,26 +140,51 @@
             </div>
 
             <style>
+                #stock-item:first-of-type {
+                    margin-top: 5rem;
+                    border: none;
+                }
+
                 #stock-item {
-                    margin-top: 30px;
-                    padding: 1rem;
+                    align-items: center;
+                    border-top: 1px solid #f1f1f1;
+                    display: flex;
+                    padding: 0.5rem 0;
                 }
 
                 #stock-item .ticker {
-                    min-width: 3em;
-                    padding: 0.3em;
+                    align-items: center;
                     background-color: #cccccc;
                     border-radius: 0.25em;
-                    display: inline-block;
-                    text-align: center;
+                    display: flex;
                     font-size: 0.7em;
+                    justify-content: center;
+                    min-width: 3em;
+                    padding: 0.3em;
                     transform: translateY(-0.16em);
+                    vertical-align: middle;
                 }
+
+                #stock-item .name {
+                    flex-grow: 1;
+                    font-size: 0.9em;
+                    padding: 0.7em 1em;
+                }
+
+                #stock-item .exchange {
+                    color: #777777;
+                    font-size: 0.7em;
+                }
+
+                #stock-item .allocation {}
             </style>
             <div id="stock-item">
-                <span class="ticker">$ticker</span>
-                <span class="name">$name</span>
-                <span class="allocation">$allocation%</span>
+                <div class="ticker">$ticker</div>
+                <div class="name">
+                    $name
+                    <div class="exchange">$exchange</div>
+                </div>
+                <div class="allocation">$allocation%</div>
             </div>
         </div>
     </div>
@@ -218,6 +243,8 @@
         //     is_etf: null | boolean;
         //     exchange: string;
         // }[]
+        // TODO preload
+        // TODO mutex while waiting
         const getStocks = async () => {
             const storageKey = "stoinks";
             let data = null;
@@ -234,8 +261,9 @@
             }
 
             // Query API when empty/corrupt.
+            // TODO remove exchanges that are all numbers?
             if (data === null) {
-                data = await fetch("https://dumbstockapi.com/stock?exchanges=NASDAQ,NYSE").then((r) => r.json());
+                data = await fetch("https://dumbstockapi.com/stock").then((r) => r.json());
                 localStorage.setItem(storageKey, JSON.stringify({
                     data,
                     expireAt: Date.now() + 1000 * 60 * 60 * 24 * 3,
@@ -281,15 +309,14 @@
             return best;
         }
 
-        // TODO test "GABLIEL"
-        const randishAllocation = (tickers) => {
+        const randomizeAllocation = (tickers) => {
             // Generate random values for each ticker.
             const genRand = rand(tickers.join("/"));
             const values = tickers.map(genRand).map((v) => v + 0.1);
 
             // Normalize values to sum to 1.
             const total = values.reduce((sum, val) => sum + val, 0);
-            const rawPercentages = values.map((v) => v/total);
+            const rawPercentages = values.map((v) => v / total);
 
             // Format as percentages.
             const percentages = rawPercentages.map((p) => Math.round(p * 10000) / 100);
@@ -297,7 +324,7 @@
             // Make sure total is always 100.
             const percentagesTotal = percentages.reduce((sum, val) => sum + val, 0);
             const delta = 100 - percentagesTotal;
-            if (Math.abs(delta) >= 0.01) {
+            if (Math.abs(delta) >= 0.005) {
                 percentages[0] = percentages[0] + Math.round(delta * 100) / 100;
             }
 
@@ -322,7 +349,7 @@
         }
 
         const renderStocks = (stocks) => {
-            const allocations = randishAllocation(stocks.map((s) => s.ticker));
+            const allocations = randomizeAllocation(stocks.map((s) => s.ticker));
             stocks.forEach((stock, i) => stock.allocation = allocations[i]);
             renderComponent(stockItemComponent, stocks);
         }
@@ -341,6 +368,7 @@
             let allPortfolios = calcPortfolios(targetString, stocks);
             if (allPortfolios.length === 0) {
                 allPortfolios = calcPortfolios("GME", stocks);
+                // TODO pick right GME or intentionally the bad one?
             }
             const bestPortfolio = pickPortfolio(allPortfolios);
             renderStocks(bestPortfolio);
