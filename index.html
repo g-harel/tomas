@@ -367,8 +367,9 @@
             ]);
             let allPortfolios = calcPortfolios(targetString, stocks);
             if (allPortfolios.length === 0) {
-                allPortfolios = calcPortfolios("GME", stocks);
-                // TODO pick right GME or intentionally the bad one?
+                allPortfolios = calcPortfolios("GME", stocks)
+                    .filter((p) => p.length === 1)
+                    .filter((p) => p[0].exchange === "NYSE");
             }
             const bestPortfolio = pickPortfolio(allPortfolios);
             renderStocks(bestPortfolio);
