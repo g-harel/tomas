@@ -243,8 +243,7 @@
         //     is_etf: null | boolean;
         //     exchange: string;
         // }[]
-        // TODO preload
-        // TODO mutex while waiting
+        let loadingStocks = null;
         const getStocks = async () => {
             const storageKey = "stoinks";
             let data = null;
@@ -263,7 +262,10 @@
             // Query API when empty/corrupt.
             // TODO remove exchanges that are all numbers?
             if (data === null) {
-                data = await fetch("https://dumbstockapi.com/stock").then((r) => r.json());
+                if (loadingStocks === null) {
+                    loadingStocks = fetch("https://dumbstockapi.com/stock").then((r) => r.json());
+                }
+                data = await loadingStocks;
                 localStorage.setItem(storageKey, JSON.stringify({
                     data,
                     expireAt: Date.now() + 1000 * 60 * 60 * 24 * 3,
@@ -272,6 +274,9 @@
 
             return data;
         }
+
+        // Warm up stock list before query.
+        getStocks();
 
         const calcPortfolios = (strategy, stocks) => {
             // Can use a ticker more than once.
