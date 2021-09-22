@@ -152,6 +152,10 @@
                     padding: 0.5rem 0;
                 }
 
+                #stock-item:last-of-type {
+                    margin-bottom: 10rem;
+                }
+
                 #stock-item .ticker {
                     align-items: center;
                     background-color: #cccccc;
@@ -175,8 +179,6 @@
                     color: #777777;
                     font-size: 0.7em;
                 }
-
-                #stock-item .allocation {}
             </style>
             <div id="stock-item">
                 <div class="ticker">$ticker</div>
@@ -229,6 +231,8 @@
     </script>
 
     <script>
+        // TODO linkable query string
+
         const container = document.getElementById("container");
         const form = document.getElementById("form");
         const query = document.getElementById("query");
@@ -260,10 +264,9 @@
             }
 
             // Query API when empty/corrupt.
-            // TODO remove exchanges that are all numbers?
             if (data === null) {
                 if (loadingStocks === null) {
-                    loadingStocks = fetch("https://dumbstockapi.com/stock").then((r) => r.json());
+                    loadingStocks = fetch("https://dumbstockapi.com/stock?exchanges=NYSE,TSX,NASDAQ,ASX,SWX,AMEX,NSE").then((r) => r.json());
                 }
                 data = await loadingStocks;
                 localStorage.setItem(storageKey, JSON.stringify({
