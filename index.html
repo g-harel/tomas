@@ -228,6 +228,18 @@
             const seedGenerator = xfnv1a(seed);
             return sfc32(seedGenerator(), seedGenerator(), seedGenerator(), seedGenerator());
         };
+
+        // Parse query string into a key/value map.
+        const parseQueryString = () => {
+            return Object.fromEntries(
+                window.location.search.substring(1)
+                    .split('&')
+                    .map((p) => [
+                        decodeURIComponent(p.split("=")[0]),
+                        decodeURIComponent(p.split("=").slice(1).join("=")),
+                    ]),
+            );
+        }
     </script>
 
     <script>
