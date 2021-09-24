@@ -239,7 +239,31 @@
                         decodeURIComponent(p.split("=").slice(1).join("=")),
                     ]),
             );
-        }
+        };
+
+        // Add a query param to the url without redirecting.
+        const writeQueryString = (key, value) => {
+            const queryString = parseQueryString();
+            queryString[key] = value;
+
+            let newQueryString = "";
+            Object.entries(queryString).forEach(([k, v]) => {
+                newQueryString += `&${encodeURIComponent(k)}`;
+                if (v !== "") {
+                    newQueryString += `=${encodeURIComponent(v)}`;
+                }
+            });
+            if (newQueryString.length > 0) {
+                newQueryString = `?${newQueryString.slice(1)}`;
+            }
+
+            const {origin, pathname, hash} = window.location;
+            const newUrl = `${origin}${pathname}${newQueryString}${hash}`;
+            try {
+                // TODO make work locally (file://)
+                window.history.pushState({path: newUrl}, "", newUrl);
+            } catch (e) {}
+        };
     </script>
 
     <script>
@@ -392,9 +416,9 @@
         };
 
         // Attach query func to form.
-        // TODO change query string when submitted
         form.onsubmit = (e) => {
             e.preventDefault();
+            writeQueryString("q", query.value.toLowerCase());
             queryStocks(query.value);
         };
 
