@@ -243,8 +243,6 @@
     </script>
 
     <script>
-        // TODO linkable query string
-
         const container = document.getElementById("container");
         const form = document.getElementById("form");
         const query = document.getElementById("query");
@@ -374,10 +372,8 @@
             renderComponent(stockItemComponent, stocks);
         }
 
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-
-            const targetString = query.value.toUpperCase().replace(/[\W_]/g, "");
+        const queryStocks = async (q) => {
+            const targetString = q.toUpperCase().replace(/[\W_]/g, "");
             if (targetString === "") return;
 
             renderLoading();
@@ -395,8 +391,22 @@
             renderStocks(bestPortfolio);
         };
 
-        // Immediately render random stocks for testing purposes.
-        if (location.search.includes("test")) {
+        // Attach query func to form.
+        // TODO change query string when submitted
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            queryStocks(query.value);
+        };
+
+        // Immediately query when query string contains query.
+        const queryString = parseQueryString();
+        if (queryString.q !== undefined) {
+            query.value = queryString.q;
+            queryStocks(queryString.q);
+        }
+
+        // Immediately render random stocks when testing.
+        if (location.search === "?test") {
             const testString = "";
             (async () => {
                 const stocks = await getStocks();
