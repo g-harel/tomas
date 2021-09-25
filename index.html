@@ -55,6 +55,11 @@
             transform: scaleX(0.95) skewY(-6deg);
         }
 
+        h1 a {
+            color: currentColor;
+            text-decoration: none;
+        }
+
         .content {
             max-width: 600px;
             overflow-x: hidden;
@@ -94,7 +99,7 @@
 
 <body>
     <header>Buy and hold</header>
-    <h1>TOMAS</h1>
+    <h1><a href="/">TOMAS</a></h1>
     <div class="content">
         <form id="form" action="#">
             <input id="query" type="text" autofocus>
@@ -234,6 +239,7 @@
             return Object.fromEntries(
                 window.location.search.substring(1)
                     .split('&')
+                    .filter(Boolean)
                     .map((p) => [
                         decodeURIComponent(p.split("=")[0]),
                         decodeURIComponent(p.split("=").slice(1).join("=")),
@@ -315,6 +321,7 @@
         // Warm up stock list before query.
         getStocks();
 
+        // TODO improve performance or give up so no hang.
         const calcPortfolios = (strategy, stocks) => {
             // Can use a ticker more than once.
             const stringBuilder = (target) => {
