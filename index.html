@@ -268,7 +268,6 @@
             const {origin, pathname, hash} = window.location;
             const newUrl = `${origin}${pathname}${newQueryString}${hash}`;
             try {
-                // TODO make work locally (file://)
                 window.history.pushState({path: newUrl}, "", newUrl);
             } catch (e) {}
         };
@@ -325,26 +324,35 @@
 
         // TODO improve performance or give up so no hang.
         const calcPortfolios = (strategy, stocks) => {
+            console.time("Calculating portfolios");
+
             // Can use a ticker more than once.
+            const cache = {};
             const stringBuilder = (target) => {
+                if (cache[target]) return cache[target];
+
                 const paths = [];
                 if (target === "") return paths;
-                stocks.forEach((stock) => {
+                for (const stock of stocks) {
                     const {ticker} = stock;
                     if (target === ticker) {
                         paths.push([stock]);
-                        return;
+                        break;
                     }
                     if (target.startsWith(ticker)) {
                         const childPaths = stringBuilder(target.slice(ticker.length));
                         childPaths.forEach((childPath) => paths.push([stock, ...childPath]));
                     }
                     // TODO skip segments that don't match.
-                });
+                }
+
+                cache[target] = paths;
                 return paths;
             }
 
-            return stringBuilder(strategy);
+            const portfolios = stringBuilder(strategy);
+            console.timeEnd("Calculating portfolios");
+            return portfolios;
         }
 
         const pickPortfolio = (portfolios) => {
