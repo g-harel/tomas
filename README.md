@@ -7,3 +7,7 @@ Cutting edge portfolio recommendation engine.
 ```
 $ npx http-server
 ```
+
+## License
+
+[MIT](./LICENSE)
