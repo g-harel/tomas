@@ -359,7 +359,7 @@
             let best = portfolios[0];
             let bestScore = 0;
             for (const portfolio of portfolios) {
-                const score = portfolio.reduce((s, stock) => s * stock.ticker.length, 1);
+                const score = portfolio.reduce((s, stock) => s + stock.ticker.length ** 2, 1);
                 if (score > bestScore) {
                     best = portfolio;
                     bestScore = score;
