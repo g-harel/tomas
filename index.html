@@ -278,7 +278,6 @@
             for (let i = 0; i < segmentCount; i++) {
                 segments.push(string.substring(i * segmentLength, (i + 1) * segmentLength));
             }
-            console.log(segments);
             return segments;
         };
     </script>
@@ -336,6 +335,9 @@
         const calcPortfolios = (strategy, stocks) => {
             console.time("Calculating portfolios");
 
+            const sections = splitString(strategy, 16);
+            console.log(sections.join(", "));
+
             // Can use a ticker more than once.
             const cache = {};
             const stringBuilder = (target) => {
@@ -360,7 +362,7 @@
                 return paths;
             }
 
-            const portfolios = stringBuilder(strategy);
+            const portfolios = sections.map((section) => stringBuilder(section));
             console.timeEnd("Calculating portfolios");
             return portfolios;
         }
@@ -433,13 +435,15 @@
                 new Promise((r) => setTimeout(r, 600 + Math.random() * 1000)),
             ]);
             let allPortfolios = calcPortfolios(targetString, stocks);
-            if (allPortfolios.length === 0) {
-                allPortfolios = calcPortfolios("GME", stocks)
-                    .filter((p) => p.length === 1)
-                    .filter((p) => p[0].exchange === "NYSE");
+            if (allPortfolios.filter((p) => p.length === 0).length !== 0) {
+                allPortfolios = [
+                    calcPortfolios("GME", stocks)[0]
+                        .filter((p) => p.length === 1)
+                        .filter((p) => p[0].exchange === "NYSE"),
+                ];
             }
-            const bestPortfolio = pickPortfolio(allPortfolios);
-            renderStocks(bestPortfolio);
+            const bestPortfolios = allPortfolios.map((p) => pickPortfolio(p));
+            renderStocks(bestPortfolios.flat());
         };
 
         // Attach query func to form.
