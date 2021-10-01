@@ -271,6 +271,16 @@
                 window.history.pushState({path: newUrl}, "", newUrl);
             } catch (e) {}
         };
+
+        const splitString = (string, segmentLength) => {
+            const segmentCount = Math.max(string.length / segmentLength);
+            const segments = [];
+            for (let i = 0; i < segmentCount; i++) {
+                segments.push(string.substring(i * segmentLength, (i + 1) * segmentLength));
+            }
+            console.log(segments);
+            return segments;
+        };
     </script>
 
     <script>
