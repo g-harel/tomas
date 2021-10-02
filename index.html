@@ -100,7 +100,11 @@
 </head>
 
 <body>
-    <header>Buy and hold</header>
+    <header>
+        <marquee direction="right" behavior="alternate">
+            Buy and hold
+        </marquee>
+    </header>
     <h1><a href="/">TOMAS</a></h1>
     <div class="content">
         <form id="form" action="#">
@@ -331,7 +335,6 @@
         // Warm up stock list before query.
         getStocks();
 
-        // TODO improve performance or give up so no hang.
         const calcPortfolios = (strategy, stocks) => {
             console.time("Calculating portfolios");
 
@@ -355,7 +358,6 @@
                         const childPaths = stringBuilder(target.slice(ticker.length));
                         childPaths.forEach((childPath) => paths.push([stock, ...childPath]));
                     }
-                    // TODO skip segments that don't match.
                 }
 
                 cache[target] = paths;
