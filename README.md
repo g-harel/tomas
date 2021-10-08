@@ -8,6 +8,10 @@ Cutting edge portfolio recommendation engine.
 $ npx http-server
 ```
 
+### Testing
+
+Add `?test` to the url to render a random portfolio on load.
+
 ## License
 
 [MIT](./LICENSE)
